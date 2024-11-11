@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id             Int     @id @default(autoincrement())
+  firstName      String
+  lastName       String
+  email          String  @unique
+  phoneNumber    String?
+  enrollmentYear Int
+  status         String
+  facultyId      Int
+  departmentId   Int
+
+  faculty     Faculty      @relation(fields: [facultyId], references: [id])
+  department  Department   @relation(fields: [departmentId], references: [id])
+  enrollments Enrollment[]
+
+  @@map("students")
+}
+
+model Faculty {
+  id     Int    @id @default(autoincrement())
+  name   String
+  deanId Int?   @unique
+
+  dean        Instructor?  @relation(fields: [deanId], references: [id], name: "DeanToFaculty")
+  departments Department[]
+  students    Student[]
+  courses     Course[]
+  instructors Instructor[] @relation(name: "InstructorToFaculty")
+
+  @@map("faculties")
+}
+
+model Department {
+  id        Int    @id @default(autoincrement())
+  name      String
+  facultyId Int
+  headId    Int?   @unique
+
+  faculty             Faculty               @relation(fields: [facultyId], references: [id])
+  head                Instructor?           @relation(fields: [headId], references: [id], name: "DepartmentHeadToDepartment") // Bölüm başkanı
+  students            Student[]
+  courses             Course[]
+  administrativeStaff AdministrativeStaff[]
+  instructors         Instructor[]          @relation(name: "InstructorToDepartment") // Bölümdeki öğretim üyeleri
+
+  @@map("departments")
+}
+
+model Course {
+  id           Int    @id @default(autoincrement())
+  name         String
+  credit       Int
+  facultyId    Int
+  departmentId Int
+  instructorId Int?
+
+  faculty     Faculty      @relation(fields: [facultyId], references: [id])
+  department  Department   @relation(fields: [departmentId], references: [id])
+  instructor  Instructor?  @relation(fields: [instructorId], references: [id])
+  enrollments Enrollment[]
+
+  @@map("courses")
+}
+
+model Enrollment {
+  id         Int     @id @default(autoincrement())
+  studentId  Int
+  courseId   Int
+  grade      String?
+  attendance Float?
+
+  student Student @relation(fields: [studentId], references: [id])
+  course  Course  @relation(fields: [courseId], references: [id])
+
+  @@map("enrollments")
+}
+
+model Instructor {
+  id           Int     @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  email        String  @unique
+  phoneNumber  String?
+  title        String
+  facultyId    Int?
+  departmentId Int?
+
+  faculty          Faculty?       @relation(name: "InstructorToFaculty", fields: [facultyId], references: [id])
+  department       Department?    @relation(name: "InstructorToDepartment", fields: [departmentId], references: [id])
+  courses          Course[] // Öğretim üyesinin verdiği dersler
+  announcements    Announcement[] // Öğretim üyesinin duyuruları
+  deanOfFaculty    Faculty?       @relation(name: "DeanToFaculty") // Dekanlık yaptığı fakülte
+  headOfDepartment Department[]   @relation(name: "DepartmentHeadToDepartment") // Başkanlık yaptığı bölümler
+
+  @@map("instructors")
+}
+
+model AdministrativeStaff {
+  id           Int     @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  email        String  @unique
+  phoneNumber  String?
+  role         String
+  departmentId Int?
+
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  @@map("administrative_staff")
+}
+
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  createdAt   DateTime @default(now())
+  createdById Int
+
+  createdBy Instructor @relation(fields: [createdById], references: [id])
+
+  @@map("announcements")
+}
