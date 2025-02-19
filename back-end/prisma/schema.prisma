@@ -12,6 +12,7 @@ model Student {
   firstName      String
   lastName       String
   email          String  @unique
+  password       String
   phoneNumber    String?
   enrollmentYear Int
   status         String
@@ -89,6 +90,7 @@ model Instructor {
   firstName    String
   lastName     String
   email        String  @unique
+  password     String
   phoneNumber  String?
   title        String
   facultyId    Int?
@@ -96,10 +98,10 @@ model Instructor {
 
   faculty          Faculty?       @relation(name: "InstructorToFaculty", fields: [facultyId], references: [id])
   department       Department?    @relation(name: "InstructorToDepartment", fields: [departmentId], references: [id])
-  courses          Course[] // Öğretim üyesinin verdiği dersler
-  announcements    Announcement[] // Öğretim üyesinin duyuruları
-  deanOfFaculty    Faculty?       @relation(name: "DeanToFaculty") // Dekanlık yaptığı fakülte
-  headOfDepartment Department[]   @relation(name: "DepartmentHeadToDepartment") // Başkanlık yaptığı bölümler
+  courses          Course[]
+  announcements    Announcement[]
+  deanOfFaculty    Faculty?       @relation(name: "DeanToFaculty")
+  headOfDepartment Department[]   @relation(name: "DepartmentHeadToDepartment")
 
   @@map("instructors")
 }
@@ -109,6 +111,7 @@ model AdministrativeStaff {
   firstName    String
   lastName     String
   email        String  @unique
+  password     String
   phoneNumber  String?
   role         String
   departmentId Int?
